@@ -52,13 +52,12 @@ class Ui_MainWindow(QWidget):
         self.centralwidget.setObjectName("centralwidget")
 
         # 图片名展示
-        self.listWidget = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget.setGeometry(QtCore.QRect(0, 0, 504, 712.8))
-        self.listWidget.setObjectName("listWidget")
+        self.tabWidget = QtWidgets.QListWidget(self.centralwidget)
+        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 504, 712.8))
+        self.tabWidget.setObjectName("listWidget")
         MainWindow.setCentralWidget(self.centralwidget)
         self.points = []
         self.value_list = []
-        self.listWidget.itemClicked.connect(self.show_image)
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(1140, 590, 113, 32))
@@ -86,9 +85,9 @@ class Ui_MainWindow(QWidget):
         self.BtnClose.clicked.connect(MainWindow.close)  # 将BtnClose的clicked信号和MainWindow的close槽连接
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(600, 0, 504, 712.8))
-        self.tabWidget.setObjectName("tabWidget")
+        self.tabWidget2 = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget2.setGeometry(QtCore.QRect(600, 0, 504, 712.8))
+        self.tabWidget2.setObjectName("tabWidget")
 
 
     def retranslateUi(self, MainWindow):
@@ -106,22 +105,17 @@ class Ui_MainWindow(QWidget):
 
     def msg(self, Filepath):
         # 点击按钮出现文件夹位置
-        directory_path = QtWidgets.QFileDialog.getExistingDirectory(None, "选取文件夹", "C:/")  # 起始路径
-        # 在这里定义一个函数展示图片
-        img_list = os.listdir(directory_path)
-        self.listWidget.addItem('需要标注的图片如下')
-        for img in img_list:
-            if 'jpg' in img or 'png' in img:
-                self.listWidget.addItem(img)
-        self.directory_path = directory_path
+        pic_path = QtWidgets.QFileDialog.getOpenFileName()
+        # 在这里定义一个函数展示图片getExistingDirectory(None, "选取文件夹", "C:/")  # 起始路径
+        self.pic_path = pic_path[0]
+        self.show_image()
 
     def show_image(self):
         # 点击listWidget组建中的item响应事件
-        imagefile = self.listWidget.currentItem().text()
-        directory_path = self.directory_path
-        img_path = os.path.join(directory_path,imagefile)
-        pix = QPixmap(img_path)
-        self.img_path = img_path
+        pic_path = self.pic_path
+
+        pix = QPixmap(pic_path)
+        self.img_path = pic_path
         lab1 = QLabel()
         lab1.setPixmap(pix)
         # 将图片搞成和组件一样的大小
@@ -150,15 +144,14 @@ class Ui_MainWindow(QWidget):
     def get_json(self):
         # 通过points，values_list生成每一个sample的json文件
         points = self.points
-        directory_path = self.directory_path
-        folder_path = os.path.join(directory_path,'json_folder')
-
+        end_str = self.pic_path.split('/')[-1]
+        directory_path = self.pic_path.rstrip(end_str)
+        folder_path = directory_path + '/json_foldee'
         if os.path.exists(folder_path):
             img_path = self.img_path
             img_name = os.path.basename(img_path)
             img_json_path = os.path.join(folder_path,img_name[:-4]+'.json')
             get_json_dict(img_json_path, points, img_name)
-
         else:
             os.makedirs(folder_path)
             img_path = self.img_path
