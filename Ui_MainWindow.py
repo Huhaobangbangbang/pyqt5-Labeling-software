@@ -12,6 +12,7 @@ from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 class SecondUI(QWidget):
     # 通过窗口获得用户输入的值
+    mySignal = pyqtSignal(int)
     def __init__(self):
         super(SecondUI, self).__init__()
         self.resize(400, 300)
@@ -41,6 +42,7 @@ class SecondUI(QWidget):
     def save_information(self):
         # 获得输入的内容
         value_out = int(self.value_input.text())
+        self.mySignal.emit(value_out)
         self.close()
 
 class Ui_MainWindow(QWidget):
@@ -57,7 +59,7 @@ class Ui_MainWindow(QWidget):
         self.tabWidget.setObjectName("listWidget")
         MainWindow.setCentralWidget(self.centralwidget)
         self.points = []
-        self.value_list = []
+        self.points_value = []
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(1140, 590, 113, 32))
@@ -134,12 +136,16 @@ class Ui_MainWindow(QWidget):
         x = int(event.pos().x())
         y = int(event.pos().y())
         # 获得鼠标点击的位置信息
+        points = []
+        self.points = [x,y]
         self.second_ui = SecondUI()
         # 初始化第二个窗口
+        self.second_ui.mySignal.connect(self.getDialogSignal)
         self.second_ui.show()
-        points = self.points
-        points.append([x,y])
-        self.get_json()
+
+
+
+
 
     def get_json(self):
         # 通过points，values_list生成每一个sample的json文件
@@ -161,7 +167,10 @@ class Ui_MainWindow(QWidget):
 
     def get_value_data_from_SecondUI(self,value_out):
         # 接受SecondUI传过来的value_out，保存到自己的变量里面。
-        self.value_out = value_out
+        self.value_list.append(value_out)
+    def getDialogSignal(self, connect):
+        self.points_value.append({'xy': self.points, 'value': connect})
+        print(self.points_value)
 
 
 
